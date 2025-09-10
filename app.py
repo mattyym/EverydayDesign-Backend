@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 CORS(app, resoruces={r"/*": {"origins": [
     "http://localhost:8888",
-    "https://your-site.netlify.app"
+    "https://interiordesignwebpage.netlify.app/"
 ]
 }})
 
