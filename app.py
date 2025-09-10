@@ -40,7 +40,7 @@ def send_email(name: str, email: str, message: str) -> bool:
             r = requests.post(url, headers=headers, json=payload, timeout=10)
             print("[RESEND]", r.status_code, r.text[:200])
             return r.ok
-        except: Exception as e:
+        except Exception as e:
             print("[RESEND][ERROR]", e)
             return false
 
