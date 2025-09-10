@@ -4,7 +4,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-CORS(app, resoruces={r"/*": {"origins": [
+CORS(app, resources={r"/*": {"origins": [
     "http://localhost:8888",
     "https://interiordesignwebpage.netlify.app"
 ]
@@ -20,30 +20,30 @@ def health():
 
 
 def send_email(name: str, email: str, message: str) -> bool:
-    if not(RESEND_API_KEY and FROM_EMAIL and TO_EMAIL):
+    if not (RESEND_API_KEY and FROM_EMAIL and TO_EMAIL):
         print("[MAIL] Missing RESEND_API_KEY / FROM_EMAIL / TO_EMAIL")
         return False
 
-        url = "https://api.resend.com/emails"
-        headers = {
-            "Authorization": f"Bearer {RESEND_API_KEY}",
-            "Content-Type": "application/json"
-        }
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "from": FROM_EMAIL,      
+        "to": [TO_EMAIL],         
+        "reply_to": email,
+        "subject": f"New contact from {name}",
+        "text": f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+    }
 
-        payload = {
-            "from": FROM_EMAIL,
-            "to": [TO_EMAIL],
-            "reply-to": email,
-            "subject": f"New contact from {name}",
-            "text": f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
-        }
-        try:
-            r = requests.post(url, headers=headers, json=payload, timeout=10)
-            print("[RESEND]", r.status_code, r.text[:200])
-            return r.ok
-        except Exception as e:
-            print("[RESEND][ERROR]", e)
-            return false
+    try:
+        r = requests.post(url, headers=headers, json=payload, timeout=10)
+        print(f"[RESEND] status={r.status_code} body={r.text[:300]}")
+        return r.ok
+    except Exception as e:
+        print("[RESEND][ERROR]", e)
+        return False
 
 @app.route("/contact", methods=["POST"])
 def contact():
@@ -62,9 +62,11 @@ def contact():
     message = data.get("message", "").strip()
 
     if not name or not email or not message:
-        return jsonify({ok: False, "error": "Missing required fields"}), 400
+        return jsonify({"ok": False, "error": "Missing required fields"}), 400
 
     print(f"[CONTACT] {name} <{email}>: {message[:120]}")
+
+    _ = send_email(name, email, message)
 
 
     return jsonify({"ok": True, "msg": "Thanks, we'll be in touch!"})
