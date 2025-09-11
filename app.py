@@ -19,7 +19,7 @@ def health():
     return {"ok": True}
 
 
-def send_email(name: str, email: str, message: str) -> bool:
+def send_email(name: str, phone: str, email: str, message: str) -> bool:
     if not (RESEND_API_KEY and FROM_EMAIL and TO_EMAIL):
         print("[MAIL] Missing RESEND_API_KEY / FROM_EMAIL / TO_EMAIL")
         return False
@@ -34,7 +34,7 @@ def send_email(name: str, email: str, message: str) -> bool:
         "to": [TO_EMAIL],         
         "reply_to": email,
         "subject": f"New contact from {name}",
-        "text": f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+        "text": f"Name: {name}\nEmail: {email}\n Phone: {phone}\n\nMessage:\n{message}"
     }
 
     try:
@@ -52,6 +52,7 @@ def contact():
     {
         "name": "Jane",
         "email": "jane@example.com"
+        "phone" :"1234567890"
         "message": "hello"
     }
     """
@@ -59,14 +60,15 @@ def contact():
     data=request.get_json() or {}
     name = data.get("name", "").strip()
     email = data.get("email","").strip()
+    phone = data.get("phone", "").strip()
     message = data.get("message", "").strip()
 
-    if not name or not email or not message:
+    if not name or not email or not phone or not message:
         return jsonify({"ok": False, "error": "Missing required fields"}), 400
 
-    print(f"[CONTACT] {name} <{email}>: {message[:120]}")
+    print(f"[CONTACT] {name} {phone} <{email}>: {message[:120]}")
 
-    _ = send_email(name, email, message)
+    _ = send_email(name, phone, email, message)
 
 
     return jsonify({"ok": True, "msg": "Thanks, we'll be in touch!"})
